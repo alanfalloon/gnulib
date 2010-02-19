@@ -413,5 +413,40 @@ main (int argc _GL_UNUSED, char **argv)
      starting with a high-bit-set byte would be treated like "0".  */
   ASSERT ( ! parse_datetime (&result, "\xb0", &now));
 
+  /* Check that the 'HH:MM TZ' form works */
+  now.tv_sec = 1266487200;
+  now.tv_nsec = 0;
+  p = "10:00 +0000";
+  ASSERT (get_date (&result, p, &now));
+  LOG (p, now, result);
+  ASSERT (result.tv_sec == now.tv_sec
+	  && result.tv_nsec == now.tv_nsec);
+  p = "10:00 +0100";
+  ASSERT (get_date (&result, p, &now));
+  LOG (p, now, result);
+  ASSERT (result.tv_sec + 3600 == now.tv_sec
+	  && result.tv_nsec == now.tv_nsec);
+  p = "10:00 -0100";
+  ASSERT (get_date (&result, p, &now));
+  LOG (p, now, result);
+  ASSERT (result.tv_sec - 3600 == now.tv_sec
+	  && result.tv_nsec == now.tv_nsec);
+
+  /* Check that the @seconds form works */
+  now.tv_sec = 1266356246;
+  now.tv_nsec = 0;
+  p = "@1266356246";
+  ASSERT (get_date (&result, p, &now));
+  LOG (p, now, result);
+  ASSERT (now.tv_sec == result.tv_sec
+	  && 0 == result.tv_nsec);
+
+  /* Check that the @seconds.frac form works */
+  p = "@1266356246.1234";
+  ASSERT (get_date (&result, p, &now));
+  LOG (p, now, result);
+  ASSERT (now.tv_sec == result.tv_sec
+	  && 123400000 == result.tv_nsec);
+
   return 0;
 }
