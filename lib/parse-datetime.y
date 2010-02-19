@@ -321,9 +321,21 @@ set_hhmmss (parser_control *pc, long int hour, long int minutes,
 %%
 
 spec:
-    timespec
+    timespec_tz
   | items
   ;
+
+timespec_tz:
+    timespec
+  | timespec zone
+      {
+        pc->zones_seen++;
+      }
+  | timespec tSNUMBER o_colon_minutes
+      {
+        pc->zones_seen++;
+        pc->time_zone = time_zone_hhmm (pc, $2, $3);
+      }
 
 timespec:
     '@' seconds
@@ -1411,7 +1423,11 @@ parse_datetime (struct timespec *result, char const *p,
     goto fail;
 
   if (pc.timespec_seen)
-    *result = pc.seconds;
+    {
+      *result = pc.seconds;
+      if (pc.zones_seen)
+        result->tv_sec += pc.time_zone * 60;
+    }
   else
     {
       if (1 < (pc.times_seen | pc.dates_seen | pc.days_seen | pc.dsts_seen

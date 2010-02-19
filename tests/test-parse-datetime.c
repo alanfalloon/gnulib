@@ -448,5 +448,18 @@ main (int argc _GL_UNUSED, char **argv)
   ASSERT (now.tv_sec == result.tv_sec
 	  && 123400000 == result.tv_nsec);
 
+  /* Check that the "@seconds TZ" form works */
+  p = "@1266356246 -0500";
+  ASSERT (get_date (&result, p, &now));
+  LOG (p, now, result);
+  ASSERT (now.tv_sec - 5 * 3600 == result.tv_sec
+	  && 0 == result.tv_nsec);
+
+  p = "@1266356246 EST";
+  ASSERT (get_date (&result, p, &now));
+  LOG (p, now, result);
+  ASSERT (now.tv_sec - 5 * 3600 == result.tv_sec
+	  && 0 == result.tv_nsec);
+
   return 0;
 }
